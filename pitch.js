@@ -89,6 +89,9 @@ function detectPitch(signal, options) {
   pool.freeFloat(re_arr)
   pool.freeFloat(im_arr)
   
-  return Math.round(xs / pitch)
+  if(pitch > 0) {
+    return Math.round(xs / pitch)
+  }
+  return 0
 }
 module.exports = detectPitch

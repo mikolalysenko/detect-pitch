@@ -1,0 +1,40 @@
+{
+  "name": "detect-pitch",
+  "version": "0.0.0",
+  "description": "Detects the pitch of an audio snippet",
+  "main": "pitch.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "bit-twiddle": "~0.0.2",
+    "ndarray": "~0.2.4",
+    "ndarray-fft": "~0.0.2",
+    "ndarray-ops": "~0.1.3",
+    "typedarray-pool": "~0.1.1"
+  },
+  "devDependencies": {
+    "tape": "~1.0.4"
+  },
+  "scripts": {
+    "test": "tap test/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mikolalysenko/detect-pitch.git"
+  },
+  "keywords": [
+    "pitch",
+    "frequency",
+    "detection",
+    "audio",
+    "processing"
+  ],
+  "author": "Mikola Lysenko",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "gitHead": "bf7972a7935b4bdbcef8154891f2e9baa82d5d04",
+  "bugs": {
+    "url": "https://github.com/mikolalysenko/detect-pitch/issues"
+  }
+}

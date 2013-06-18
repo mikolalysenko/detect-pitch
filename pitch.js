@@ -89,9 +89,6 @@ function detectPitch(signal, options) {
   pool.freeFloat(re_arr)
   pool.freeFloat(im_arr)
   
-  if(period > 0) {
-    return Math.round(xs / period)
-  }
-  return 0
+  return period
 }
 module.exports = detectPitch

@@ -1,6 +1,6 @@
 {
   "name": "detect-pitch",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Detects the pitch of an audio snippet",
   "main": "pitch.js",
   "directories": {

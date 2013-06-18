@@ -22,7 +22,14 @@ function square(x, y) {
   }
 }
 
-function findPeriod(x, lo, hi, threshold) {
+function findPeriod(x, lo, hi, scale_f) {
+  //1st pass compute best val
+  var loc_m = 0.0
+  for(var i=lo; i<hi; ++i) {
+    loc_m = Math.max(loc_m, x[i])
+  }
+  //2nd pass compute max
+  var threshold = loc_m * scale_f
   for(var i=lo; i<hi; ++i) {
     if(x[i] > threshold) {
       var best = x[i]
@@ -83,7 +90,7 @@ function detectPitch(signal, options) {
           re_arr,
           options.start_bin || 16,
           xs>>>1,
-          re_arr[0] * threshold)
+          threshold)
   
   //Free temporary arrays
   pool.freeFloat(re_arr)

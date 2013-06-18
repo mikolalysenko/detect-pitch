@@ -81,7 +81,7 @@ function detectPitch(signal, options) {
   var threshold = options.threshold || 0.9
   var period = findPeriod(
           re_arr,
-          options.start_bin || 16,
+          options.start_bin || 8,
           xs>>>1,
           re_arr[0] * threshold)
   

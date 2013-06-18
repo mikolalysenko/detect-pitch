@@ -13,12 +13,12 @@ function zero(arr, lo, hi) {
 }
 
 function square(x, y) {
-  var n = x.length
+  var n = x.length, n2 = Math.ceil(0.5*n)|0
   x[0] = y[0] = 0.0
-  for(var i=1; i<n; ++i) {
+  for(var i=1; i<n2; ++i) {
     var a = x[i], b = y[i]
-    x[i] = a*a + b*b
-    y[i] = 0.0
+    x[n-i] = x[i] = a*a + b*b
+    y[n-i] = y[i] = 0.0
   }
 }
 

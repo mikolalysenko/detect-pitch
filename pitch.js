@@ -22,7 +22,7 @@ function square(x, y) {
   }
 }
 
-function findPitch(x, lo, hi, threshold) {
+function findPeriod(x, lo, hi, threshold) {
   for(var i=lo; i<hi; ++i) {
     if(x[i] > threshold) {
       var best = x[i]
@@ -79,7 +79,7 @@ function detectPitch(signal, options) {
   
   //Detect pitch
   var threshold = options.threshold || 0.9
-  var pitch = findPitch(
+  var period = findPeriod(
           re_arr,
           options.start_bin || 16,
           xs>>>1,
@@ -89,8 +89,8 @@ function detectPitch(signal, options) {
   pool.freeFloat(re_arr)
   pool.freeFloat(im_arr)
   
-  if(pitch > 0) {
-    return Math.round(xs / pitch)
+  if(period > 0) {
+    return Math.round(xs / period)
   }
   return 0
 }

@@ -31,7 +31,7 @@ console.log(Math.round(n / detectPitch(signal)))
 ### `require('detect-pitch')(signal)`
 Detects the pitch of `signal` by computing the period by autocorrelation.
 
-* `signal` is a (possibly windowed) snippet of an audio signal.  Represented as either a typed array or an [ndarray](https://github.com/scijs/ndarray).
+* `signal` is a snippet of an audio signal.  Represented as either a typed array or an [ndarray](https://github.com/scijs/ndarray).
 
 **Returns** The number of samples in the **period** of the signal.  To recover the pitch *frequency*, you need to divide the sample rate by this number:
 

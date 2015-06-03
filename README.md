@@ -8,12 +8,12 @@ Detects the pitch of a signal using the autocorrelation method.
 var detectPitch = require("detect-pitch")
 
 var n = 1024
+var ω = 2.0 * Math.PI / n
 
+//Initialize signal
 var signal = new Float32Array(n)
-
-var omega = 2.0 * Math.PI / n
 for(var i=0; i<n; ++i) {
-  signal[i] = Math.sin(100 * i * omega)
+  signal[i] = Math.sin(100 * i * ω)
 }
 
 console.log(Math.round(n / detectPitch(signal)))
@@ -31,7 +31,7 @@ console.log(Math.round(n / detectPitch(signal)))
 ### `require("detect-pitch")(signal)`
 Detects the pitch of `signal` by computing the period by autocorrelation.
 
-* `signal` is a (possibly windowed) snippet of an audio signal.  Represented as either a typed array or an [ndarray](https://github.com/mikolalysenko/ndarray).
+* `signal` is a (possibly windowed) snippet of an audio signal.  Represented as either a typed array or an [ndarray](https://github.com/scijs/ndarray).
 
 **Returns** The **period** of the signal.  To recover the pitch, divide the sample rate by it.
 

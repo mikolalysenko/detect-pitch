@@ -5,13 +5,7 @@ var pool = require('typedarray-pool')
 var ndarray = require('ndarray')
 var ops = require('ndarray-ops')
 var fft = require('ndarray-fft')
-var hann = require('scijs-window-functions').hann
-
-function zero(arr, lo, hi) {
-  for(var i=lo; i<hi; ++i) {
-    arr[i] = 0.0
-  }
-}
+var hann = require('scijs-window-functions/hann')
 
 function square(x, y) {
   var n = x.length
@@ -32,22 +26,13 @@ function prefilter(x, xf, n) {
   }
 }
 
-function power(x, n) {
-  var s = 0
-  for(var i=0; i<n; ++i) {
-    s += x[i]*x[i]
-  }
-  return s
-}
-
 function aperiodic(x, n) {
-  if(!n) {
+  if(n<=3) {
     return true
   }
   var d = ((x + 0.5 * n) % n) - 0.5 * n
   return Math.abs(d) > 1
 }
-
 
 function findPeriod(x, lo, hi) {
   var smallest = 1.0
@@ -60,26 +45,25 @@ function findPeriod(x, lo, hi) {
         smallest = y1
         period = i+1
       }
-      continue
-    }
-    var s = 0.5 * (y0 - y2) / denom
-    if(Math.abs(s) > 1.0) {
-      continue
-    }
-    var ymin = y1 + 0.25 * Math.pow(y0 - y2, 2) / denom
-    if(ymin < smallest) {
-      var f0 = i + s + 1
-      if(aperiodic(f0, period)) {
-        smallest = ymin
-        period = f0
+    } else {
+      var s = 0.5 * (y0 - y2) / denom
+      if(Math.abs(s) > 1.0) {
+        continue
+      }
+      var ymin = y1 + 0.25 * Math.pow(y0 - y2, 2) / denom
+      if(ymin < smallest) {
+        var f0 = i + s + 1
+        if(aperiodic(f0, period)) {
+          smallest = ymin
+          period = f0
+        }
       }
     }
   }
   return period
 }
 
-function detectPitch(signal, options) {
-  options = options || {}
+function detectPitch(signal) {
   var xs
   if(signal.shape) {
     xs = signal.shape[0]
@@ -97,19 +81,25 @@ function detectPitch(signal, options) {
 
   //Initialize array depending on if it is a typed array
   if(signal.shape) {
-    ops.assign(X.hi(n), signal)
+    ops.assign(X.hi(xs), signal)
   } else {
     re_arr.set(signal)
   }
-  zero(re_arr, xs, n)
-  zero(im_arr, 0, n)
-
-  for(var i=0; i<xs; ++i) {
-    re_arr[i] *= hann(i, xs)
-  }
 
   //Compute magnitude
-  var magnitude = power(re_arr, xs)
+  var magnitude = 0.0
+  for(var i=0; i<xs; ++i) {
+    var z = re_arr[i] *= hann(i, xs)
+    magnitude += Math.pow(z, 2)
+  }
+
+  //Zero out arrays
+  for(var i=xs; i<n; ++i) {
+    re_arr[i] = 0.0
+  }
+  for(var i=0; i<n; ++i) {
+    im_arr[i] = 0.0
+  }
 
   //Autocorrelate
   fft(1, X, Y)
@@ -120,12 +110,7 @@ function detectPitch(signal, options) {
   prefilter(re_arr, magnitude, xs)
 
   //Detect pitch
-  var threshold = options.threshold || 0.9
-  var period = findPeriod(
-          re_arr,
-          1,
-          xs>>>1,
-          threshold)
+  var period = findPeriod(re_arr, 0, xs>>>1)
 
   //Free temporary arrays
   pool.freeFloat(re_arr)

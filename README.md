@@ -5,7 +5,7 @@ Detects the pitch of a signal using the autocorrelation method.
 ## Example
 
 ```javascript
-var detectPitch = require("detect-pitch")
+var detectPitch = require('detect-pitch')
 
 var n = 1024
 var ω = 2.0 * Math.PI / n

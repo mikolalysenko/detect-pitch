@@ -1,10 +1,11 @@
 "use strict"
 
-var bits = require("bit-twiddle")
-var pool = require("typedarray-pool")
-var ndarray = require("ndarray")
-var ops = require("ndarray-ops")
-var fft = require("ndarray-fft")
+var bits = require('bit-twiddle')
+var pool = require('typedarray-pool')
+var ndarray = require('ndarray')
+var ops = require('ndarray-ops')
+var fft = require('ndarray-fft')
+var hann = require('scijs-window-functions').hann
 
 function zero(arr, lo, hi) {
   for(var i=lo; i<hi; ++i) {
@@ -13,43 +14,68 @@ function zero(arr, lo, hi) {
 }
 
 function square(x, y) {
-  var n = x.length, n2 = Math.ceil(0.5*n)|0
-  x[0] = y[0] = 0.0
-  for(var i=1; i<n2; ++i) {
+  var n = x.length
+  for(var i=0; i<n; ++i) {
     var a = x[i], b = y[i]
-    x[n-i] = x[i] = a*a + b*b
-    y[n-i] = y[i] = 0.0
+    x[i] = a*a + b*b
+    y[i] = 0.0
   }
 }
 
-function findPeriod(x, lo, hi, scale_f) {
-  //1st pass compute best val
-  var loc_m = 0.0
-  for(var i=lo; i<hi; ++i) {
-    loc_m = Math.max(loc_m, x[i])
+function prefilter(x, xf, n) {
+  x[0] = 1
+  var s = 0
+  for(var i=1; i<n; ++i) {
+    var d = Math.max(xf - x[i], 0.0)
+    s += d
+    x[i] = d * i / s
   }
-  //2nd pass compute max
-  var threshold = loc_m * scale_f
-  for(var i=lo; i<hi; ++i) {
-    if(x[i] > threshold) {
-      var best = x[i]
-      var r = i
-      for(var j=i; j < hi && x[j] > threshold; ++j) {
-        if(x[j] > best) {
-          best = x[j]
-          r = j
-        }
+}
+
+function power(x, n) {
+  var s = 0
+  for(var i=0; i<n; ++i) {
+    s += x[i]*x[i]
+  }
+  return s
+}
+
+function aperiodic(x, n) {
+  if(!n) {
+    return true
+  }
+  var d = ((x + 0.5 * n) % n) - 0.5 * n
+  return Math.abs(d) > 1
+}
+
+
+function findPeriod(x, lo, hi) {
+  var smallest = 1.0
+  var period = 0
+  for(var i=lo; i+2<hi; ++i) {
+    var y0 = x[i], y1 = x[i+1], y2 = x[i+2]
+    var denom = y2 - 2.0 * y1 + y0
+    if(Math.abs(denom) < 1e-6) {
+      if(y1 < smallest && aperiodic(i+1, period)) {
+        smallest = y1
+        period = i+1
       }
-      var y0 = x[r-1], y1 = x[r], y2 = x[r+1]
-      var denom = y2 - y1 + y0
-      if(Math.abs(denom) < 1e-6) {
-        return r
+      continue
+    }
+    var s = 0.5 * (y0 - y2) / denom
+    if(Math.abs(s) > 1.0) {
+      continue
+    }
+    var ymin = y1 + 0.25 * Math.pow(y0 - y2, 2) / denom
+    if(ymin < smallest) {
+      var f0 = i + s + 1
+      if(aperiodic(f0, period)) {
+        smallest = ymin
+        period = f0
       }
-      var numer = y0 - y2
-      return r + 0.5 * numer / denom
     }
   }
-  return 0
+  return period
 }
 
 function detectPitch(signal, options) {
@@ -60,42 +86,51 @@ function detectPitch(signal, options) {
   } else {
     xs = signal.length
   }
-  
-  var i, j, k
+
   var n = bits.nextPow2(2*xs)
+
+  var i, j, k
   var re_arr = pool.mallocFloat(n)
   var im_arr = pool.mallocFloat(n)
-  var X = ndarray.ctor(re_arr, [n], [1], 0)
-  var Y = ndarray.ctor(im_arr, [n], [1], 0)
-  
+  var X = ndarray(re_arr, [n], [1], 0)
+  var Y = ndarray(im_arr, [n], [1], 0)
+
   //Initialize array depending on if it is a typed array
   if(signal.shape) {
-    X.shape[0] = xs
-    ops.assign(X, signal)
-    X.shape[0] = n
+    ops.assign(X.hi(n), signal)
   } else {
     re_arr.set(signal)
   }
   zero(re_arr, xs, n)
   zero(im_arr, 0, n)
-  
+
+  for(var i=0; i<xs; ++i) {
+    re_arr[i] *= hann(i, xs)
+  }
+
+  //Compute magnitude
+  var magnitude = power(re_arr, xs)
+
   //Autocorrelate
   fft(1, X, Y)
   square(re_arr, im_arr)
   fft(-1, X, Y)
-  
+
+  //Apply prefiltering
+  prefilter(re_arr, magnitude, xs)
+
   //Detect pitch
   var threshold = options.threshold || 0.9
   var period = findPeriod(
           re_arr,
-          options.start_bin || 16,
+          1,
           xs>>>1,
           threshold)
-  
+
   //Free temporary arrays
   pool.freeFloat(re_arr)
   pool.freeFloat(im_arr)
-  
+
   return period
 }
 module.exports = detectPitch

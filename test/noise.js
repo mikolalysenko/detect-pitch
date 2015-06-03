@@ -9,14 +9,14 @@ function runTest(t, n, freq_list, phase_list, amplitude_list) {
   for(var i=0; i<freq_list.length; ++i) {
     var f = freq_list[i]
     for(var j=0; j<n; ++j) {
-      signal[j] = Math.sin(f * j * omega + phase_list[i]) * amplitude_list[i]
+      signal[j] = Math.sin(f * j * omega + phase_list[i]) * amplitude_list[i] + 0.25*(0.5-Math.random())
     }
     var pitch = detectPitch(signal)
     t.equals(Math.round(n/pitch), f, 'detected period: ' + (pitch) + ', expected: ' + (n/f))
   }
 }
 
-require("tape")("detect-pitch: pure sine wave", function(t) {
+require("tape")("detect-pitch: pure sine wave + uniform noise", function(t) {
 
   var freqs = []
   var phases = []

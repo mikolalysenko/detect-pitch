@@ -10,7 +10,6 @@
     "bit-twiddle": "^1.0.2",
     "ndarray": "^1.0.18",
     "ndarray-fft": "^1.0.0",
-    "ndarray-normalize": "^1.0.0",
     "ndarray-ops": "^1.2.2",
     "scijs-window-functions": "^2.0.2",
     "typedarray-pool": "^1.1.0"

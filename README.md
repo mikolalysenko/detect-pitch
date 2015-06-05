@@ -28,12 +28,13 @@ console.log(Math.round(n / detectPitch(signal)))
 
     npm install detect-pitch
 
-### `require('detect-pitch')(signal)`
+### `require('detect-pitch')(signal[, threshold])`
 Detects the pitch of `signal` by computing the period by autocorrelation.
 
 * `signal` is a snippet of an audio signal.  Represented as either a typed array or an [ndarray](https://github.com/scijs/ndarray).
+* `threshold` is an optional parameter between `0` and `1` which determines the cutoff for reporting a successful detection.  Higher values indicate stricture cutoff.  Default is `0`
 
-**Returns** The number of samples in the **period** of the signal.  To recover the pitch *frequency*, you need to divide the sample rate by this number:
+**Returns** The number of samples in the **period** of the signal.  If no pitch was detected, returns `0`.  To recover the pitch *frequency*, you need to divide the sample rate by this number (note that this will be `NaN` for signals with no pitch):
 
 ```javascript
 var pitchInHz = sampleRateInHz / periodInSamples

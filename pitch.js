@@ -34,7 +34,7 @@ function aperiodic(x, n) {
   return Math.abs(d) > 1
 }
 
-function findPeriod(x, lo, hi) {
+function findPeriod(x, lo, hi, threshold) {
   var smallest = 1.0
   var period = 0
   for(var i=lo; i+2<hi; ++i) {
@@ -60,10 +60,15 @@ function findPeriod(x, lo, hi) {
       }
     }
   }
-  return period
+  if(smallest < 1.0 - threshold) {
+    return period
+  }
+  return 0.0
 }
 
-function detectPitch(signal) {
+function detectPitch(signal, threshold) {
+  threshold = threshold || 0.0
+
   var xs
   if(signal.shape) {
     xs = signal.shape[0]
@@ -110,7 +115,7 @@ function detectPitch(signal) {
   prefilter(re_arr, magnitude, xs)
 
   //Detect pitch
-  var period = findPeriod(re_arr, 0, xs>>>1)
+  var period = findPeriod(re_arr, 0, xs>>>1, threshold)
 
   //Free temporary arrays
   pool.freeFloat(re_arr)

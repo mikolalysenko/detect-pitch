@@ -44,7 +44,7 @@ audio.addEventListener('canplay', function() {
     requestAnimationFrame(processSection)
 
     analyser.getFloatTimeDomainData(signal)
-    var period = detectPitch(signal)
+    var period = detectPitch(signal, 0.2)
     var pitch = -1
     pitchDiv.style['font-size'] = ((0.25*(window.innerHeight))|0) + 'px'
     if(period) {
